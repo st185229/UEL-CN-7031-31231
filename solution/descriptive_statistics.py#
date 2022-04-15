@@ -64,32 +64,59 @@ schema = StructType([ \
     StructField("ct_dst_sport_ltm", IntegerType(), True), \
     StructField("ct_dst_src_ltm", IntegerType(), True), \
     StructField("attack_cat", StringType(), True), \
-    StructField("Label", IntegerType(), True) \
+    StructField("Label", StringType(), True) \
 
   ])
 
 
 # Load files
 
-lines = sc.textFile("hdfs/spark/files/UNSW-NB15.csv")
-parts = lines.map(lambda l: l.split(","))
-attack_record = parts.map(lambda p: (p[0], p[1].strip(),p[2],p[3],p[4],p[5],p[6],p[7],p[8],p[9],p[10],p[11],p[12],p[13],p[14],p[15],p[16],p[17],p[18],p[19],p[20],p[21],p[22],p[23],p[24],p[25],p[26],p[27],p[28],p[29],p[30],p[31],p[32],p[33],p[34],p[35],p[36],p[37],p[38],p[39],p[40],p[41],p[42],p[43],p[44],p[45],p[46],p[47],p[48]))
+#rowRDD = sc.textFile("hdfs/spark/files/UNSW-NB15.csv",use_unicode=False).map(lambda l: l.split(","))
 
-schemaAttackRecords = sqlContext.createDataFrame(attack_record, schema)
-schemaAttackRecords.registerTempTable("nb15")
-results = sqlContext.sql("SELECT attack_cat,service, count(*) FROM nb15 GROUP BY  attack_cat, service")
+df=sqlContext.createDataFrame(sc.textFile("hdfs/spark/files/UNSW-NB15.csv").map(lambda x:split(","),schema)
 
- 
+#df = sqlContext.read.schema(schema).option("mode", "DROPMALFORMED").load("hdfs/spark/files/UNSW-NB15.csv")
+
+
+#df = rowRDD.toDF()
+#df = sqlContext.createDataFrame(rowRDD, schema)
+
+# Displays the content of the DataFrame to stdoutpply the schema to the RDD.
+#rdd = sqlContext.createDataFrame(src, schema)
+
+# Register the DataFrame as a table.
+#rdd.registerTempTable("src")
+
+# Cache the data frame
+#df = rdd.cache()
 
 #  Write the count to check
 print("\n------------------------------------RESULTS BEGIN-----------------------------------\n")
+print("Total number of rows :- " , df.count())
+print(df.take(2))
+#df.describe().show()
+#df.select('attack_cat').describe().show()
 
-names = results.map(lambda p: "attack_cat: " + p.attack_cat + "service :- " + p.service )
-for name in names.collect():
-  print(name)
+
+
+
+#results = sqlContext.sql("select attack_cat,service, count(*) num_incidents from src  where Label =1 and service <> '-' group by attack_cat, service order by num_incidents desc")
+#print(results)
+
+#rows = results.map(lambda p: "Attack Category: " + p.attack_cat + "Service: " + p.service + " number of incidents" + p.num_incidents)
+#for row in rows.collect():
+#  print(row)
 
 
 print("\n-----------------------------------RESULTS END--------------------------------------------\n")
 
+
+# SQL can be run over DataFrames that have been registered as a table.
+#results = sqlContext.sql("SELECT srcip FROM src")
+
+# The results of SQL queries are RDDs and support all the normal RDD operations.
+#names = results.map(lambda p: "Name: " + p.srcip)
+#for name in names.collect():
+#  print(name)
 
 
