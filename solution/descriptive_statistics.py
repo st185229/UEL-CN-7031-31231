@@ -3,6 +3,7 @@ from pyspark import SparkContext
 from pyspark import SparkConf
 from pyspark.sql import SQLContext
 from pyspark.sql.types import *
+from pyspark.sql import HiveContext
 
 # Create context
 sc = SparkContext("local", "uel-unsw-nb15-descr-stat app")
@@ -11,14 +12,13 @@ sc = SparkContext("local", "uel-unsw-nb15-descr-stat app")
 sc.setLogLevel("ERROR")
 
 # SQL context
-sqlContext = SQLContext(sc)
+sqlContext = HiveContext(sc)
 
 
 # Define Schema
-schema = StructType([ \
-    StructField("srcip",StringType(),True), \
-    StructField("sport",IntegerType(),True), \
-    StructField("dstip",StringType(),True), \
+schema = StructType([ 
+    StructField("srcip",StringType(),True), StructField("sport",IntegerType(),True), \
+    StructField("dstip",StringType(),True),  \
     StructField("dsport", IntegerType(), True), \
     StructField("proto", StringType(), True), \
     StructField("state", StringType(), True), \
@@ -73,11 +73,17 @@ schema = StructType([ \
 
 lines = sc.textFile("hdfs/spark/files/UNSW-NB15.csv")
 parts = lines.map(lambda l: l.split(","))
-attack_record = parts.map(lambda p: (p[0], int(p[1].strip()),p[2],int(p[3]),p[4],p[5],float(p[6]),int(p[7]),int(p[8]),int(p[9]),int(p[10]),int(p[11]),int(p[12]),p[13],float(p[14]),float(p[15]),p[16],p[17],p[18],p[19],p[20],p[21],p[22],p[23],p[24],p[25],p[26],p[27],p[28],p[29],p[30],p[31],p[32],p[33],p[34],p[35],p[36],p[37],p[38],p[39],p[40],p[41],p[42],p[43],p[44],p[45],p[46],p[47],int(p[48].strip())))
+attack_record = parts.map(lambda p: (p[0], int(p[1].strip()),p[2],int(p[3]),p[4],p[5], \
+                float(p[6]),int(p[7]),int(p[8]),int(p[9]),int(p[10]), int(p[11]), \
+                int(p[12]),p[13],float(p[14]),float(p[15]),int(p[16]), int(p[17]), \
+                int(p[18]),int(p[19]),int(p[20]),int(p[21]),int(p[22]),int(p[23]), \
+                int(p[24]),int(p[25]),float(p[26]),float(p[27]),int(p[28]),int(p[29]), \
+                float(p[30]),float(p[31]),float(p[32]),float(p[33]), float(p[34]),int(p[35]), \
+                int(p[36]),int(p[37]),int(p[38]),int(p[39]),int(p[40]),int(p[41]),int(p[42]), int(p[43]),int(p[44]),int(p[45]),int(p[46]),p[47],int(p[48].strip())))
 
 schemaAttackRecords = sqlContext.createDataFrame(attack_record, schema)
 schemaAttackRecords.registerTempTable("nb15")
-results = sqlContext.sql("SELECT attack_cat,service, Label , count(*) FROM nb15 where Label = 1 GROUP BY  attack_cat, service, Label")
+results = sqlContext.sql("SELECT attack_cat,service, count(*) FROM nb15 where Label = 1 GROUP BY  attack_cat, service, Label")
 
 
 #  Write the count to check
@@ -85,6 +91,20 @@ print("\n------------------------------------RESULTS BEGIN----------------------
 
 results.withColumnRenamed('_c3', 'Total').show()
 
-results.withColumnRenamed('_c3', 'Total').describe().show()
+
+results.withColumnRenamed('_c3', 'Total').write.mode("overwrite").saveAsTable("temp_table")
+
+tempTable = sqlContext.table("temp_table") 
+
+sqlContext.sql('DROP TABLE IF EXISTS uel_cn_7031_st. attack_service_summary')
+sqlContext.sql("CREATE TABLE IF NOT EXISTS uel_cn_7031_st.attack_service_summary(attack_cat STRING, service STRING , Total DOUBLE)")
+
+
+tempTable.write.mode("overwrite").insertInto("uel_cn_7031_st.attack_service_summary")
+
+result1 = sqlContext.sql("SELECT * FROM uel_cn_7031_st.attack_service_summary")
+result1.show()
+
 
 print("\n-----------------------------------RESULTS END--------------------------------------------\n")
+
