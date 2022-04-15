@@ -83,33 +83,11 @@ attack_record = parts.map(lambda p: (p[0], int(p[1].strip()),p[2],int(p[3]),p[4]
 
 schemaAttackRecords = sqlContext.createDataFrame(attack_record, schema)
 schemaAttackRecords.registerTempTable("nb15")
-results = sqlContext.sql("SELECT attack_cat,service, count(*) FROM nb15 where Label = 1 GROUP BY  attack_cat, service, Label")
 
 
 #  Write the count to check
 print("\n------------------------------------RESULTS BEGIN-----------------------------------\n")
 
-results.withColumnRenamed('_c3', 'Total').show()
-
-
-results.withColumnRenamed('_c3', 'Total').write.mode("overwrite").saveAsTable("temp_table")
-
-tempTable = sqlContext.table("temp_table") 
-
-sqlContext.sql('DROP TABLE IF EXISTS uel_cn_7031_st. attack_service_summary')
-sqlContext.sql("CREATE TABLE IF NOT EXISTS uel_cn_7031_st.attack_service_summary(attack_cat STRING, service STRING , Total DOUBLE)")
-
-
-tempTable.write.mode("overwrite").insertInto("uel_cn_7031_st.attack_service_summary")
-
-result1 = sqlContext.sql("SELECT * FROM uel_cn_7031_st.attack_service_summary")
-result1.describe().show()
-result1.show()
-
-
-result2 = sqlContext.sql("select attack_cat, round(corr(sloss, sbytes),2), round(corr(dloss, dbytes),2), round(corr(is_ftp_login, ct_ftp_cmd),2) from nb15 where label =1 and service <> '-' group by attack_cat")
-result2.describe()
-result2.describe().show()
 
 
 
