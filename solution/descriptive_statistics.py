@@ -79,15 +79,12 @@ schemaAttackRecords = sqlContext.createDataFrame(attack_record, schema)
 schemaAttackRecords.registerTempTable("nb15")
 results = sqlContext.sql("SELECT attack_cat,service, Label , count(*) FROM nb15 where Label = 1 GROUP BY  attack_cat, service, Label")
 
- 
 
 #  Write the count to check
 print("\n------------------------------------RESULTS BEGIN-----------------------------------\n")
+
 results.withColumnRenamed('_c3', 'Total').show()
 
-#names = results.map(lambda p: "   " + p.attack_cat + "     " + p.service + "      " + str(p._c3) + "       " + str(p.Label))
-#for name in names.collect():
-#  print(name)
-
+results.withColumnRenamed('_c3', 'Total').describe().show()
 
 print("\n-----------------------------------RESULTS END--------------------------------------------\n")
