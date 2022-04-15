@@ -73,18 +73,20 @@ schema = StructType([ \
 
 lines = sc.textFile("hdfs/spark/files/UNSW-NB15.csv")
 parts = lines.map(lambda l: l.split(","))
-attack_record = parts.map(lambda p: (p[0], p[1].strip(),p[2],p[3],p[4],p[5],p[6],p[7],p[8],p[9],p[10],p[11],p[12],p[13],p[14],p[15],p[16],p[17],p[18],p[19],p[20],p[21],p[22],p[23],p[24],p[25],p[26],p[27],p[28],p[29],p[30],p[31],p[32],p[33],p[34],p[35],p[36],p[37],p[38],p[39],p[40],p[41],p[42],p[43],p[44],p[45],p[46],p[47],p[48]))
+attack_record = parts.map(lambda p: (p[0], p[1].strip(),p[2],p[3],p[4],p[5],p[6],p[7],p[8],p[9],p[10],p[11],p[12],p[13],p[14],p[15],p[16],p[17],p[18],p[19],p[20],p[21],p[22],p[23],p[24],p[25],p[26],p[27],p[28],p[29],p[30],p[31],p[32],p[33],p[34],p[35],p[36],p[37],p[38],p[39],p[40],p[41],p[42],p[43],p[44],p[45],p[46],p[47],int(p[48].strip())))
 
 schemaAttackRecords = sqlContext.createDataFrame(attack_record, schema)
 schemaAttackRecords.registerTempTable("nb15")
-results = sqlContext.sql("SELECT attack_cat,service, count(*) FROM nb15 GROUP BY  attack_cat, service")
+results = sqlContext.sql("SELECT attack_cat,service, Label , count(*) FROM nb15 where Label = 1 GROUP BY  attack_cat, service, Label")
 
  
 
 #  Write the count to check
 print("\n------------------------------------RESULTS BEGIN-----------------------------------\n")
+print ("\n Attack category ----------- Service ---------- Total ---------- Label ------------")
+results.show()
 
-names = results.map(lambda p: "attack_cat: " + p.attack_cat + "service :- " + p.service )
+names = results.map(lambda p: "   " + p.attack_cat + "     " + p.service + "      " + str(p._c3) + "       " + str(p.Label))
 for name in names.collect():
   print(name)
 
