@@ -5,6 +5,7 @@ from pyspark.sql.types import *
 
 # Create context
 sc = SparkContext("local", "uel-unsw-nb15-descr-stat app")
+# Set log level to make sure that we dont have unncessary logs
 sc.setLogLevel("ERROR")
 
 # SQL context
@@ -33,8 +34,8 @@ schema = StructType([ \
     StructField("Dpkts", IntegerType(), True), \
     StructField("swin",IntegerType(),True), \
     StructField("dwin",IntegerType(),True), \
-    StructField("stcpb",IntegerType(),True), \
-    StructField("dtcpb", IntegerType(), True), \
+    StructField("stcpb",LongType(),True), \
+    StructField("dtcpb", LongType(), True), \
     StructField("smeansz", IntegerType(), True), \
     StructField("dmeansz", IntegerType(), True), \
     StructField("trans_depth",IntegerType(),True), \
@@ -48,10 +49,10 @@ schema = StructType([ \
     StructField("tcprtt",DoubleType(),True), \
     StructField("synack",DoubleType(),True), \
     StructField("ackdat",DoubleType(),True), \
-    StructField("is_sm_ips_ports",BinaryType(),True), \
+    StructField("is_sm_ips_ports",IntegerType(),True), \
     StructField("ct_state_ttl",IntegerType(),True), \
     StructField("ct_flw_http_mthd", IntegerType(), True), \
-    StructField("is_ftp_login", BinaryType(), True), \
+    StructField("is_ftp_login", IntegerType(), True), \
     StructField("ct_ftp_cmd", IntegerType(), True), \
     StructField("ct_srv_src", IntegerType(), True), \
     StructField("ct_srv_dst", IntegerType(), True), \
@@ -61,36 +62,45 @@ schema = StructType([ \
     StructField("ct_dst_sport_ltm", IntegerType(), True), \
     StructField("ct_dst_src_ltm", IntegerType(), True), \
     StructField("attack_cat", StringType(), True), \
-    StructField("Label", BinaryType(), True) \
+    StructField("Label", IntegerType(), True) \
 
   ])
 
 
+# Load files
 
+rowRDD = sc.textFile("hdfs/spark/files/UNSW-NB15.csv").map(lambda l: l.split(","))
 
-lines = sc.textFile("hdfs/spark/files/UNSW-NB15.csv")
-parts = lines.map(lambda l: l.split(","))
-src = lines.map(lambda l: l.split(","))
-
-#schemaString = "srcip sport dsport	proto	state	dur	sbytes	dbytes	sttl	dttl	sloss	dloss	service	Sload	Dload	Spkts	Dpkts	swin	dwin	stcpb	dtcpb	smeansz	dmeansz	trans_depth	res_bdy_len	Sjit	Djit	Stime	Ltime	Sintpkt	Dintpkt	tcprtt	synack	ackdat	is_sm_ips_ports	ct_state_ttl	ct_flw_http_mthd	is_ftp_login	ct_ftp_cmd	ct_srv_src	ct_srv_dst	ct_dst_ltm	ct_src_ ltm ct_src_dport_ltm	ct_dst_sport_ltm	ct_dst_src_ltm	attack_cat	Label"
-#fields = [StructField(field_name, StringType(), True) for field_name in schemaString.split()]
-#schema = StructType(fields)
+df = rowRDD.toDF(schema)
 
 
 # Displays the content of the DataFrame to stdoutpply the schema to the RDD.
-rdd = sqlContext.createDataFrame(src, schema)
+#rdd = sqlContext.createDataFrame(src, schema)
 
 # Register the DataFrame as a table.
-rdd.registerTempTable("src")
+#rdd.registerTempTable("src")
 
 # Cache the data frame
-cachedDataFrame = rdd.cache()
+#df = rdd.cache()
 
 #  Write the count to check
 print("\n------------------------------------RESULTS BEGIN-----------------------------------\n")
-print("Total number of rows :- " , cachedDataFrame.count())
-cachedDataFrame.describe()
-cachedDataFrame.printSchema()
+print("Total number of rows :- " , df.count())
+print(df.take(2))
+#df.describe().show()
+#df.select('attack_cat').describe().show()
+
+
+
+
+#results = sqlContext.sql("select attack_cat,service, count(*) num_incidents from src  where Label =1 and service <> '-' group by attack_cat, service order by num_incidents desc")
+#print(results)
+
+#rows = results.map(lambda p: "Attack Category: " + p.attack_cat + "Service: " + p.service + " number of incidents" + p.num_incidents)
+#for row in rows.collect():
+#  print(row)
+
+
 print("\n-----------------------------------RESULTS END--------------------------------------------\n")
 
 
