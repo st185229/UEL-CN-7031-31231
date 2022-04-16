@@ -87,7 +87,7 @@ schemaAttackRecords.registerTempTable("nb15")
 df = sqlContext.sql("select sbytes, dbytes from nb15 where label =1")
 print("-------------RESULTS , Covariant & Correlation & Cross Tabulation---------------")
 print("Covarient between source bytes and destination bytes = " + str(df.stat.cov('sbytes', 'dbytes')))
-print("Correlation between source bytes and destination bytes = " + str(df.stat.cov('sbytes', 'dbytes')))
+print("Correlation between source bytes and destination bytes = " + str(df.stat.corr('sbytes', 'dbytes')))
 
 
 df1 = sqlContext.sql("select attack_cat, service from nb15 where label =1")
