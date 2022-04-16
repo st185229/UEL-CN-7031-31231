@@ -2,10 +2,7 @@
 from pyspark import SparkContext 
 from pyspark.sql.types import *
 from pyspark.sql import HiveContext
-from pyspark.mllib.linalg import Vectors, Matrices
-from pyspark.mllib.regresssion import LabeledPoint
 from pyspark.mllib.stat import Statistics
-
 
 # Create context
 sc = SparkContext("local", "uel-unsw-nb15-descr-stat app")
@@ -75,37 +72,24 @@ schema = StructType([
 
 lines = sc.textFile("hdfs/spark/files/UNSW-NB15.csv")
 parts = lines.map(lambda l: l.split(","))
-attack_record = parts.map(lambda p: (p[0].strip(), int(p[1].strip()),p[2].strip(),int(p[3]),p[4].strip(),p[5].strip(), \
+attack_record = parts.map(lambda p: (p[0], int(p[1].strip()),p[2],int(p[3]),p[4],p[5], \
                 float(p[6]),int(p[7]),int(p[8]),int(p[9]),int(p[10]), int(p[11]), \
-                int(p[12]),p[13].strip(),float(p[14]),float(p[15]),int(p[16]), int(p[17]), \
+                int(p[12]),p[13],float(p[14]),float(p[15]),int(p[16]), int(p[17]), \
                 int(p[18]),int(p[19]),int(p[20]),int(p[21]),int(p[22]),int(p[23]), \
                 int(p[24]),int(p[25]),float(p[26]),float(p[27]),int(p[28]),int(p[29]), \
                 float(p[30]),float(p[31]),float(p[32]),float(p[33]), float(p[34]),int(p[35]), \
                 int(p[36]),int(p[37]),int(p[38]),int(p[39]),int(p[40]),int(p[41]),int(p[42]), \
-                int(p[43]),int(p[44]),int(p[45]),int(p[46]),p[47].strip(),int(p[48].strip())))
+                int(p[43]),int(p[44]),int(p[45]),int(p[46]),p[47],int(p[48].strip())))
 
 schemaAttackRecords = sqlContext.createDataFrame(attack_record, schema)
 schemaAttackRecords.registerTempTable("nb15")
 
-results = sqlContext.sql("select \
-                          case trim(attack_cat) \
-                             when 'Fuzzers' then 1 \
-                             when 'Generic' then 2  \
-                             when 'Shellcode' then 3 \
-                             when 'DoS' then 4 \
-                             when 'Analysis' then 5 \
-                             when 'Backdoors' then 6 \
-                             when 'Reconnaissance' then 7 \
-                             when 'Exploits' then 8 \
-                             when 'Backdoor' then 9 \
-                             when 'Worms' then 10 \
-                          else 0 \
-                          end, sbytes, spkts from nb15 where label =1 and service = 'dns'")
 
-results.show()
-results.describe().show()
+#  Write the count to check
+print("\n------------------------------------RESULTS BEGIN-----------------------------------\n")
 
-mat = Matrices.dense(results)
-independenceTestResult = Statistics.chiSqTest(mat)
-print(independenceTestResult) 
+
+
+
+print("\n-----------------------------------RESULTS END--------------------------------------------\n")
 
