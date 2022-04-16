@@ -2,10 +2,8 @@
 from pyspark import SparkContext 
 from pyspark.sql.types import *
 from pyspark.sql import HiveContext
-from pyspark.mllib.linalg import Vectors, Matrices
-from pyspark.mllib.regresssion import LabeledPoint
-from pyspark.mllib.stat import Statistics
-
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.stat import ChiSquareTest
 
 # Create context
 sc = SparkContext("local", "uel-unsw-nb15-descr-stat app")
@@ -87,6 +85,7 @@ attack_record = parts.map(lambda p: (p[0].strip(), int(p[1].strip()),p[2].strip(
 schemaAttackRecords = sqlContext.createDataFrame(attack_record, schema)
 schemaAttackRecords.registerTempTable("nb15")
 
+
 results = sqlContext.sql("select \
                           case trim(attack_cat) \
                              when 'Fuzzers' then 1 \
@@ -100,12 +99,28 @@ results = sqlContext.sql("select \
                              when 'Backdoor' then 9 \
                              when 'Worms' then 10 \
                           else 0 \
-                          end, sbytes, spkts from nb15 where label =1 and service = 'dns'")
+                          end as coded_att_cat, sbytes, spkts from nb15 where label =1 and service = 'dns'")
 
-results.show()
-results.describe().show()
 
-mat = Matrices.dense(results)
-independenceTestResult = Statistics.chiSqTest(mat)
-print(independenceTestResult) 
 
+# Create a dataframe for chisquare
+data = []
+
+dataCollect = results.collect()
+for row in dataCollect:
+	data.append( (row['coded_att_cat'], Vectors.dense(row['sbytes'], row['spkts'])))
+
+
+df = sqlContext.createDataFrame(data, ["label", "features"])
+
+
+df.describe()
+df.describe().show()
+r = ChiSquareTest.test(df, "features", "label").head()
+
+print("pValues: " + str(r.pValues))
+print("degreesOfFreedom: " + str(r.degreesOfFreedom))
+print("statistics: " + str(r.statistics))
+
+#chiSqResult = ChiSquareTest.test(results, 'coded_cat', 'sbytes')
+#
