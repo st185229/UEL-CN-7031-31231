@@ -153,6 +153,7 @@ np.save("le1_classes.npy",le1.classes_,allow_pickle=True)
 multi_data = data.copy()
 multi_label = pd.DataFrame(multi_data.attack_cat)
 multi_data = pd.get_dummies(multi_data,columns=['attack_cat'])
+
 # label encoding (0,1,2,3,4,5,6,7,8) multi-class labels
 le2 = preprocessing.LabelEncoder()
 enc_label = multi_label.apply(le2.fit_transform)
@@ -218,6 +219,7 @@ X_train,X_test,y_train,y_test = train_test_split(X,Y,test_size=0.20, random_stat
 ## **Linear Regression**
 lr_bin = LinearRegression()
 lr_bin.fit(X_train, y_train)
+
 y_pred = lr_bin.predict(X_test)
 
 # Prepared  based ib 0.6  threshold
@@ -232,18 +234,21 @@ print("R2 Score - " , metrics.explained_variance_score(y_test, y_pred)*100)
 print("Accuracy - ",accuracy_score(y_test,y_pred)*100)
 
 cls_report= classification_report(y_true=y_test, y_pred=y_pred,target_names=le1.classes_)
+
 print("Printing report")
 print(cls_report)
+
 # Saving Data Set
 lr_bin_df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
 lr_bin_df.to_csv('./generated_predictions/lr_real_predication_bin.csv')
+
 # Saving Binary class diagram
 plt.figure(figsize=(20,8))
 plt.plot(y_pred[:200], label="prediction", linewidth=2.0,color='blue')
 plt.plot(y_test[:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
 plt.title("Linear Regression Binary Classification")
-plt.savefig('./generated_diagrams/lr_real_pred_bin.png')
+plt.savefig('./generated_diagrams/lr_real_pred_bin_suresh.png')
 
 pkl_filename = "./generated_models/linear_regressor_binary_suresh.pkl"
 if (not path.isfile(pkl_filename)):
@@ -293,6 +298,14 @@ else:
   print("Model already saved")
 
 # **MULTI-CLASS CLASSIFICATION**
+# Data Splitting
+X = multi_data.drop(columns=['label'],axis=1)
+Y = multi_data['label']
+
+X_train,X_test,y_train,y_test = train_test_split(X,Y,test_size=0.30, random_state=100)
+
+
+
 
 ## **Logistic Regression**
 print(" Multi  variable logistic regression")
@@ -308,23 +321,23 @@ print("Root Mean Squared Error - " , np.sqrt(metrics.mean_squared_error(y_test, 
 print("R2 Score - " , metrics.explained_variance_score(y_test, y_pred)*100)
 print("Accuracy - ",accuracy_score(y_test,y_pred)*100)
 
+
 print(classification_report(y_test, y_pred,target_names=le2.classes_))
 
 logr_multi_df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
-logr_multi_df.to_csv('./generated_predictions/logr_real_pred_multi.csv')
-logr_multi_df
+logr_multi_df.to_csv('./generated_predictions/logr_real_predicted_multi.csv')
 
 plt.figure(figsize=(20,8))
 plt.plot(y_pred[:200], label="prediction", linewidth=2.0,color='blue')
 plt.plot(y_test[:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
 plt.title("Logistic Regression Multi-class Classification")
-plt.savefig('generated_diagrams/logr_real_pred_multi.png')
+plt.savefig('generated_diagrams/logr_real_values_pred_multi.png')
 
 ### Saving Trained Model to Disk**
 #%%
 
-pkl_filename = "./generated_models/logistic_regressor_multi.pkl"
+pkl_filename = "./generated_models/logistic_regressor_multi_class.pkl"
 if (not path.isfile(pkl_filename)):
   # saving the trained model to disk 
   with open(pkl_filename, 'wb') as file:
