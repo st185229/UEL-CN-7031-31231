@@ -44,7 +44,6 @@ from sklearn.neural_network import MLPClassifier
 data = pd.read_csv("/home/suresh/git/UEL-CN-7031-31231/solution/hdfs/spark/files/UNSW_NB15_UEL_ST.csv")
 
 #   Many elements have service = - , Here we replace the same 
-data[data['service']=='-']
 # % Replace the service = - with naan"
 data['service'].replace('-',np.nan,inplace=True)
 
@@ -83,8 +82,6 @@ for c in binary_names:
 for c in float_names:
   pd.to_numeric(data[c])
 
-# Just checking the lables label =1 for attack records label = 0 for normal records
-data.label.value_counts()
 
 # This is the Binary classifier class
 # Design and build a binary classifier over the dataset. Explain your algorithm and its configuration. 
@@ -109,11 +106,9 @@ num_col = data.select_dtypes(include='number').columns
 # selecting categorical data attributes
 cat_col = data.columns.difference(num_col)
 cat_col = cat_col[1:]
-cat_col
 
 # creating a dataframe with only categorical attributes
 data_cat = data[cat_col].copy()
-data_cat.head(20)
 
 # attributes using pandas.get_dummies() function
 # https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html Convert categorical variable into dummy/indicator variables.
@@ -125,7 +120,6 @@ data.drop(columns=cat_col,inplace=True)
 num_col = list(data.select_dtypes(include='number').columns)
 num_col.remove('id')
 num_col.remove('label')
-print("Number of columns %s", num_col)
 
 # using minmax scaler for normalizing data
 # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
@@ -154,7 +148,7 @@ le1 = preprocessing.LabelEncoder()
 enc_label = bin_label.apply(le1.fit_transform)
 bin_data['label'] = enc_label
 ## the class numpy is stored locally
-np.save("./generated_numpy/le1_classes.npy",le1.classes_,allow_pickle=True)
+np.save("le1_classes.npy",le1.classes_,allow_pickle=True)
 # one-hot-encoding attack label
 multi_data = data.copy()
 multi_label = pd.DataFrame(multi_data.attack_cat)
@@ -163,7 +157,7 @@ multi_data = pd.get_dummies(multi_data,columns=['attack_cat'])
 le2 = preprocessing.LabelEncoder()
 enc_label = multi_label.apply(le2.fit_transform)
 multi_data['label'] = enc_label
-np.save("generated_numpy/le2_classes.npy",le2.classes_,allow_pickle=True)
+np.save("le2_classes.npy",le2.classes_,allow_pickle=True)
 num_col.append('label')
 
 ## **Correlation Matrix for Binary Labels**
@@ -191,11 +185,9 @@ highest_corr_bin.sort_values(ascending=True)
 
 # selecting attributes found by using pearson correlation coefficient
 bin_cols = highest_corr_bin.index
-bin_cols
 
 # Binary labelled Dataset
 bin_data = bin_data[bin_cols].copy()
-bin_data
 # Save into dataset folder
 bin_data.to_csv('./generated_datasets/bin_data.csv')
 
@@ -245,7 +237,6 @@ print(cls_report)
 # Saving Data Set
 lr_bin_df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
 lr_bin_df.to_csv('./generated_predictions/lr_real_predication_bin.csv')
-lr_bin_df
 # Saving Binary class diagram
 plt.figure(figsize=(20,8))
 plt.plot(y_pred[:200], label="prediction", linewidth=2.0,color='blue')
@@ -264,7 +255,6 @@ else:
   print("Previous Model exists on the disk! Please Remove")
 
 logr_bin = LogisticRegression(random_state=123, max_iter=5000)
-logr_bin
 
 logr_bin.fit(X_train,y_train)
 
@@ -303,46 +293,42 @@ else:
   print("Model already saved")
 
 # **MULTI-CLASS CLASSIFICATION**
-print("Multi class")
-X = multi_data.drop(columns=['label'],axis=1)
-Y = multi_data['label']
-X_train,X_test,y_train,y_test = train_test_split(X,Y,test_size=0.30, random_state=100)
-## **Linear Regression**
-lr_multi = LinearRegression()
-lr_multi.fit(X_train, y_train)
-y_pred = lr_multi.predict(X_test)
-for i in range(len(y_pred)):
-  y_pred[i] = int(round(y_pred[i]))
+
+## **Logistic Regression**
+print(" Multi  variable logistic regression")
+
+logr_multi = LogisticRegression(random_state=123, max_iter=5000,solver='newton-cg',multi_class='multinomial')
+logr_multi.fit(X_train,y_train)
+
+y_pred = logr_multi.predict(X_test)
+
 print("Mean Absolute Error - " , metrics.mean_absolute_error(y_test, y_pred))
 print("Mean Squared Error - " , metrics.mean_squared_error(y_test, y_pred))
 print("Root Mean Squared Error - " , np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
 print("R2 Score - " , metrics.explained_variance_score(y_test, y_pred)*100)
 print("Accuracy - ",accuracy_score(y_test,y_pred)*100)
+
 print(classification_report(y_test, y_pred,target_names=le2.classes_))
 
-#%%
+logr_multi_df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
+logr_multi_df.to_csv('./generated_predictions/logr_real_pred_multi.csv')
+logr_multi_df
 
-lr_multi_df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
-lr_multi_df.to_csv('./generated_predictions/lr_real_pred_multi.csv')
-lr_multi_df
-
-#%%
 plt.figure(figsize=(20,8))
-plt.plot(y_pred[100:200], label="prediction", linewidth=2.0,color='blue')
-plt.plot(y_test[100:200].values, label="real_values", linewidth=2.0,color='lightcoral')
+plt.plot(y_pred[:200], label="prediction", linewidth=2.0,color='blue')
+plt.plot(y_test[:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
-plt.title("Linear Regression Multi-class Classification")
-plt.savefig('./generated_diagrams/lr_real_vs_pred_multi_class.png')
+plt.title("Logistic Regression Multi-class Classification")
+plt.savefig('generated_diagrams/logr_real_pred_multi.png')
 
-pkl_filename = "./generated_models/linear_regressor_multi.pkl"
+### Saving Trained Model to Disk**
+#%%
+
+pkl_filename = "./generated_models/logistic_regressor_multi.pkl"
 if (not path.isfile(pkl_filename)):
   # saving the trained model to disk 
   with open(pkl_filename, 'wb') as file:
-    pickle.dump(lr_multi, file)
+    pickle.dump(logr_multi, file)
   print("Saved model to disk")
 else:
   print("Model already saved")
-
-## **End**
-
-
