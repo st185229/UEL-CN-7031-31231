@@ -43,22 +43,12 @@ from sklearn.neural_network import MLPClassifier
 
 data = pd.read_csv("/home/suresh/git/UEL-CN-7031-31231/solution/hdfs/spark/files/UNSW_NB15_UEL_ST.csv")
 
-# Checking to  make sure that the data is correct
-data.info()
-
-# % Load 5 eleements to see everything is fine"
-data.head(n=5)
-
 #   Many elements have service = - , Here we replace the same 
 data[data['service']=='-']
 # % Replace the service = - with naan"
 data['service'].replace('-',np.nan,inplace=True)
 
 data.dropna(inplace=True)
-print( "-------------Attack catogeries---------------")
-data['attack_cat'].value_counts()
-print("-------------States---------------------------")
-data['state'].value_counts()
 
 # Loading the fatures  to derive data types
 # Comment to the UEL/Unicaf tutor from Suresh - The feature had some unicode charars in the description removed them and replaced them in the file 
@@ -105,8 +95,6 @@ plt.title("Pie chart distribution of normal and abnormal labels",fontsize=16)
 plt.legend()
 plt.savefig('./generated_diagrams/Pie_chart_bin_cls_sureshThomas.png')
 
-print ("**************** Attack categories*****************")
-data.attack_cat.unique()
 
 # This is the multi class diagram
 plt.figure(figsize=(8,8))
