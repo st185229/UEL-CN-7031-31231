@@ -103,8 +103,7 @@ plt.figure(figsize=(8,8))
 plt.pie(data.label.value_counts(),labels=['normal-traffic','attack-traffic'],autopct='%0.2f%%')
 plt.title("Pie chart distribution of normal and abnormal labels",fontsize=16)
 plt.legend()
-plt.savefig('plots/Pie_chart_bin_cls_sureshThomas.png')
-plt.show()
+plt.savefig('generated_diagrams/Pie_chart_bin_cls_sureshThomas.png')
 
 print ("**************** Attack categories*****************")
 data.attack_cat.unique()
@@ -114,8 +113,7 @@ plt.figure(figsize=(8,8))
 plt.pie(data.attack_cat.value_counts(),labels=list(data.attack_cat.unique()),autopct='%0.2f%%')
 plt.title('Pie chart distribution of multi-class labels')
 plt.legend(loc='best')
-plt.savefig('plots/Pie_chart_multi_sureshthomas.png')
-plt.show()
+plt.savefig('generated_diagrams/Pie_chart_multi_sureshthomas.png')
 
 # Store number of columns
 num_col = data.select_dtypes(include='number').columns
@@ -186,8 +184,7 @@ plt.figure(figsize=(20,8))
 corr_bin = bin_data[num_col].corr()
 sns.heatmap(corr_bin,vmax=1.0,annot=False)
 plt.title('Correlation Matrix for Binary Labels',fontsize=16)
-plt.savefig('./plots/correlation_matrix_bin.png')
-plt.show()
+plt.savefig('./generated_diagrams/correlation_matrix_bin.png')
 
 ## **Correlation Matrix for Multi-class Labels**
 num_col = list(multi_data.select_dtypes(include='number').columns)
@@ -197,8 +194,7 @@ plt.figure(figsize=(20,8))
 corr_multi = multi_data[num_col].corr()
 sns.heatmap(corr_multi,vmax=1.0,annot=False)
 plt.title('Correlation Matrix for Multi Labels',fontsize=16)
-plt.savefig('./plots/correlation_matrix_multi.png')
-plt.show()
+plt.savefig('./generated_diagrams/correlation_matrix_multi.png')
 
 # finding the attributes which have more than 0.3 correlation with encoded attack label attribute 
 corr_ybin = abs(corr_bin['label'])
@@ -268,8 +264,7 @@ plt.plot(y_pred[:200], label="prediction", linewidth=2.0,color='blue')
 plt.plot(y_test[:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
 plt.title("Linear Regression Binary Classification")
-plt.savefig('plots/lr_real_pred_bin.png')
-plt.show()
+plt.savefig('generated_diagrams/lr_real_pred_bin.png')
 
 pkl_filename = "./models/linear_regressor_binary_suresh.pkl"
 if (not path.isfile(pkl_filename)):
@@ -306,8 +301,7 @@ plt.plot(y_pred[:200], label="prediction", linewidth=2.0,color='blue')
 plt.plot(y_test[:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
 plt.title("Linear Regression Binary Classification")
-plt.savefig('plots/lr_real_pred_bin.png')
-plt.show()
+plt.savefig('generated_diagrams/linearrrg_real_vs_pred_bin.png')
 
 ### **Saving Trained Model to Disk**
 
@@ -350,8 +344,7 @@ plt.plot(y_pred[100:200], label="prediction", linewidth=2.0,color='blue')
 plt.plot(y_test[100:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
 plt.title("Linear Regression Multi-class Classification")
-plt.savefig('plots/lr_real_pred_multi.png')
-plt.show()
+plt.savefig('generated_diagrams/lr_real_vs_pred_multi_class.png')
 
 pkl_filename = "./models/linear_regressor_multi.pkl"
 if (not path.isfile(pkl_filename)):
