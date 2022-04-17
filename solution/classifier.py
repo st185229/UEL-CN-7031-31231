@@ -103,7 +103,7 @@ plt.figure(figsize=(8,8))
 plt.pie(data.label.value_counts(),labels=['normal-traffic','attack-traffic'],autopct='%0.2f%%')
 plt.title("Pie chart distribution of normal and abnormal labels",fontsize=16)
 plt.legend()
-plt.savefig('generated_diagrams/Pie_chart_bin_cls_sureshThomas.png')
+plt.savefig('./generated_diagrams/Pie_chart_bin_cls_sureshThomas.png')
 
 print ("**************** Attack categories*****************")
 data.attack_cat.unique()
@@ -113,7 +113,7 @@ plt.figure(figsize=(8,8))
 plt.pie(data.attack_cat.value_counts(),labels=list(data.attack_cat.unique()),autopct='%0.2f%%')
 plt.title('Pie chart distribution of multi-class labels')
 plt.legend(loc='best')
-plt.savefig('generated_diagrams/Pie_chart_multi_sureshthomas.png')
+plt.savefig('./generated_diagrams/Pie_chart_multi_sureshthomas.png')
 
 # Store number of columns
 num_col = data.select_dtypes(include='number').columns
@@ -166,7 +166,7 @@ le1 = preprocessing.LabelEncoder()
 enc_label = bin_label.apply(le1.fit_transform)
 bin_data['label'] = enc_label
 ## the class numpy is stored locally
-np.save("generated_numpy/le1_classes.npy",le1.classes_,allow_pickle=True)
+np.save("./generated_numpy/le1_classes.npy",le1.classes_,allow_pickle=True)
 # one-hot-encoding attack label
 multi_data = data.copy()
 multi_label = pd.DataFrame(multi_data.attack_cat)
@@ -209,7 +209,7 @@ bin_cols
 bin_data = bin_data[bin_cols].copy()
 bin_data
 # Save into dataset folder
-bin_data.to_csv('./datasets/bin_data.csv')
+bin_data.to_csv('./generated_datasets/bin_data.csv')
 
 
 # finding the attributes which have more than 0.3 correlation with encoded attack label attribute 
@@ -225,7 +225,7 @@ multi_cols = highest_corr_multi.index
 multi_data = multi_data[multi_cols].copy()
 
 ### **Saving Generated Dataset **
-multi_data.to_csv('./datasets/multi_data.csv')
+multi_data.to_csv('./generated_datasets/multi_data.csv')
 
 # **BINARY CLASSIFICATION**
 print( "Binary classification")
@@ -256,7 +256,7 @@ print("Printing report")
 print(cls_report)
 # Saving Data Set
 lr_bin_df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
-lr_bin_df.to_csv('./datasets/lr_real_pred_bin.csv')
+lr_bin_df.to_csv('./generated_predictions/lr_real_predication_bin.csv')
 lr_bin_df
 # Saving Binary class diagram
 plt.figure(figsize=(20,8))
@@ -264,9 +264,9 @@ plt.plot(y_pred[:200], label="prediction", linewidth=2.0,color='blue')
 plt.plot(y_test[:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
 plt.title("Linear Regression Binary Classification")
-plt.savefig('generated_diagrams/lr_real_pred_bin.png')
+plt.savefig('./generated_diagrams/lr_real_pred_bin.png')
 
-pkl_filename = "./models/linear_regressor_binary_suresh.pkl"
+pkl_filename = "./generated_models/linear_regressor_binary_suresh.pkl"
 if (not path.isfile(pkl_filename)):
   # saving the trained model to disk 
   with open(pkl_filename, 'wb') as file:
@@ -293,7 +293,7 @@ cls_report= classification_report(y_true=y_test, y_pred=y_pred,target_names=le1.
 print(cls_report)
 print ("\n prediceted")
 logr_bin_df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
-logr_bin_df.to_csv('./predictions/logr_real_pred_bin.csv')
+logr_bin_df.to_csv('./generated_predictions/logr_real_pred_bin.csv')
 logr_bin_df
 
 plt.figure(figsize=(20,8))
@@ -301,11 +301,11 @@ plt.plot(y_pred[:200], label="prediction", linewidth=2.0,color='blue')
 plt.plot(y_test[:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
 plt.title("Linear Regression Binary Classification")
-plt.savefig('generated_diagrams/linearrrg_real_vs_pred_bin.png')
+plt.savefig('./generated_diagrams/linearrrg_real_vs_pred_bin.png')
 
 ### **Saving Trained Model to Disk**
 
-pkl_filename = "./models/logistic_regressor_binary_1.pkl"
+pkl_filename = "./generated_models/logistic_regressor_binary_1.pkl"
 if (not path.isfile(pkl_filename)):
   # saving the trained model to disk 
   with open(pkl_filename, 'wb') as file:
@@ -335,7 +335,7 @@ print(classification_report(y_test, y_pred,target_names=le2.classes_))
 #%%
 
 lr_multi_df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
-lr_multi_df.to_csv('./predictions/lr_real_pred_multi.csv')
+lr_multi_df.to_csv('./generated_predictions/lr_real_pred_multi.csv')
 lr_multi_df
 
 #%%
@@ -344,9 +344,9 @@ plt.plot(y_pred[100:200], label="prediction", linewidth=2.0,color='blue')
 plt.plot(y_test[100:200].values, label="real_values", linewidth=2.0,color='lightcoral')
 plt.legend(loc="best")
 plt.title("Linear Regression Multi-class Classification")
-plt.savefig('generated_diagrams/lr_real_vs_pred_multi_class.png')
+plt.savefig('./generated_diagrams/lr_real_vs_pred_multi_class.png')
 
-pkl_filename = "./models/linear_regressor_multi.pkl"
+pkl_filename = "./generated_models/linear_regressor_multi.pkl"
 if (not path.isfile(pkl_filename)):
   # saving the trained model to disk 
   with open(pkl_filename, 'wb') as file:
